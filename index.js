@@ -20,6 +20,7 @@ oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const repliedUsers = new Set();
 
+
 async function checkEmailAndSendReplies() {
   try {
 
@@ -34,13 +35,13 @@ async function checkEmailAndSendReplies() {
     const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
     // 1.check for new emails in a given Gmail ID
-    
 
-   // //This code retrieves a list of unread email messages from the Gmail
+
+    // //This code retrieves a list of unread email messages from the Gmail
     // service for the authenticated user.
-   
+
     // The response from the service, containing the list of messages, 
-    
+
     const res = await gmail.users.messages.list({ userId: 'me', q: 'is:unread' });
 
     // extracts the list of email messages from that 
@@ -50,9 +51,9 @@ async function checkEmailAndSendReplies() {
 
 
     for (const message of messages) {
-        //The code loops through each email message in the messages list. For each message,
-        // it makes an API call to the Gmail service using the gmail object to retrieve 
-        //the detailed information of that particular message.
+      //The code loops through each email message in the messages list. For each message,
+      // it makes an API call to the Gmail service using the gmail object to retrieve 
+      //the detailed information of that particular message.
       //  'me' typically refers to the currently authenticated user. 
 
       const email = await gmail.users.messages.get({ userId: 'me', id: message.id });
@@ -65,7 +66,7 @@ async function checkEmailAndSendReplies() {
       const toHeader = email.data.payload.headers.find(header => header.name === 'To');
       const subject = email.data.payload.headers.find(header => header.name === 'Subject');
 
-    //   getting the values from the headers array
+      //   getting the values from the headers array
 
       const From = from.value;
       const toEmail = toHeader.value;
@@ -82,24 +83,24 @@ async function checkEmailAndSendReplies() {
         continue;
       }
 
-       // gets the thread(detailed information) from the gmail 
-       //   API from the currently authenticated user
-      
+      // gets the thread(detailed information) from the gmail 
+      //   API from the currently authenticated user
+
 
       const thread = await gmail.users.threads.get({ userId: 'me', id: message.threadId });
 
 
-     //   It creates a new array called replies that contains all the messages 
-     //   in the thread.data.messages array starting from the
-     //   second element (index 1) onwards.
+      //   It creates a new array called replies that contains all the messages 
+      //   in the thread.data.messages array starting from the
+      //   second element (index 1) onwards.
       const replies = thread.data.messages.slice(1);
 
-    //2. send replies to Emails that have no prior replies
+      //2. send replies to Emails that have no prior replies
 
-    //   if there are no existing replies in the email thread by
-    //   examining the length of the replies array. If there are no replies (replies.length === 0), 
-    //   it proceeds to send a reply email using the Gmail API,
-    //   providing the necessary parameters such as the sender, recipient, and email content.
+      //   if there are no existing replies in the email thread by
+      //   examining the length of the replies array. If there are no replies (replies.length === 0), 
+      //   it proceeds to send a reply email using the Gmail API,
+      //   providing the necessary parameters such as the sender, recipient, and email content.
 
       if (replies.length === 0) {
         await gmail.users.messages.send({
@@ -109,10 +110,10 @@ async function checkEmailAndSendReplies() {
           },
         });
 
-    //3.The app should add a Label to the email and move the email to the label
+        //3.The app should add a Label to the email and move the email to the label
 
 
-     // This create a label name
+        // This create a label name
 
 
         const labelName = 'onVacation';
@@ -122,9 +123,9 @@ async function checkEmailAndSendReplies() {
 
         const labelId = await createLabelIfNeeded(gmail, labelName);
 
- //   This line of code makes an asynchronous API call to modify a specific email
-//   message by adding a label to it. 
-    //   It uses the gmail.users.messages.modify method provided by the Gmail API.
+        //   This line of code makes an asynchronous API call to modify a specific email
+        //   message by adding a label to it. 
+        //   It uses the gmail.users.messages.modify method provided by the Gmail API.
 
         await gmail.users.messages.modify({
           userId: 'me',
@@ -132,10 +133,10 @@ async function checkEmailAndSendReplies() {
           requestBody: { addLabelIds: [labelId] },
         });
 
-    // This code logs a message to the console indicating 
-    // that a reply has been sent to a specific email address (From).
-    //  It also adds the email address to the repliedUsers set to keep track
-    //   of the users who have been replied to.
+        // This code logs a message to the console indicating 
+        // that a reply has been sent to a specific email address (From).
+        //  It also adds the email address to the repliedUsers set to keep track
+        //   of the users who have been replied to.
 
         console.log('Sent reply to email:', From);
         repliedUsers.add(From);
@@ -150,16 +151,16 @@ async function checkEmailAndSendReplies() {
 }
 
 
- // The createReplyRaw function generates the content of the
+// The createReplyRaw function generates the content of the
 //   reply email in base64-encoded format.
 
 async function createReplyRaw(from, to, subject) {
 
-   
 
-    // This line creates a string variable named emailContent that contains the
-    //  email message content. It uses template literals (enclosed in backticks)
-    //  to interpolate the values of from, to, and subject into the string.
+
+  // This line creates a string variable named emailContent that contains the
+  //  email message content. It uses template literals (enclosed in backticks)
+  //  to interpolate the values of from, to, and subject into the string.
 
   const emailContent = `From: ${from}\nTo:${to}\nSubject: ${subject}\n\nThank you for your message. I am unavailable right now, but will respond as soon as possible...`;
   const base64EncodedEmail = Buffer.from(emailContent).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
